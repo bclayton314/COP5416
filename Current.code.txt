@@ -1,0 +1,284 @@
+//NAME: CLAYTON BAKER
+//DUE DATE: 10DEC2021
+//CLASS: COP5416
+//TITLE: Spell Check Using a Hash Table
+//DESCRIPTION: This program takes a large list of words and uses a hash function to 
+//insert them into a hash table.  Using this hash table as a dictionary, the program 
+//can check common words in a text file for spelling errors.
+
+package com.Project4;
+
+
+public class SpellChecker {
+
+	public static void main(String[] args) {
+		
+		//Instantiate objects and use methods for hash dictionary / spell check
+		Hash h = new Hash();
+		
+		CreateHashDict f = new CreateHashDict();
+		f.formatInsert("Dictionary.txt", h);
+
+		SearchCheckSpell r = new SearchCheckSpell();
+		r.checkSpell("testTextFile.txt", h);
+	}
+}
+
+
+package com.Project4;
+import java.io.*;
+import java.util.*;
+
+
+public class SearchCheckSpell {
+	
+	//Variables to check if not in hash table / dictionary
+	String notFound1 = "notFound";
+	String notFound2 = "notFound";
+	String notFound3 = "notFound";
+	
+	//Method to scan / check the spelling of words from text file
+	public void checkSpell(String fileName, Hash hashTable) {
+		
+		//Scans text file
+		try (Scanner s = new Scanner(new File(fileName))){
+	    	while (s.hasNextLine()) {
+	    		
+	    		//Formats string
+	    		String string1 = new String(s.nextLine());
+	    		String[] stringArray = string1.replaceAll("[^a-zA-Z ]", "").split("\\s+");
+	    		
+	    		//Checks for blank lines
+	    		if (!string1.equals("")) {
+	    			
+	    			//Goes through word for word
+		    		for (int i = 0; i < stringArray.length; i++) {
+			    		String firstWord = stringArray[i];
+			    		
+			    		//Checks for upper case letters
+			    		if (containsUpperCaseLetter(firstWord)) {
+			    			System.out.println("\"" + firstWord + "\" has upper case letters.  Will still spell check.");
+			    			firstWord = firstWord.toLowerCase();
+			    		}
+			    		
+			    		//Searches through hash table / dictionary
+			    		int posToFind = hashTable.hash(firstWord);
+						Hash.Word resultWord = hashTable.searchHash(posToFind, firstWord);
+	
+			    		//If-else logic to search / print word if found
+			    		if (resultWord != null) {
+				    		if (!firstWord.equals(resultWord.word)) {
+				    			System.out.println("Cannot find the word: \"" + firstWord + "\" in the dictionary");
+				    			notFound1 = oneLtrMissing(firstWord, hashTable);
+				    			notFound2 = oneLetterAdded(firstWord, hashTable);
+				    			notFound3 = twoLettersReversed(firstWord, hashTable);
+				    			if (notFound1 == "notFound" && notFound2 == "notFound" && notFound3 == "notFound") {
+				    				System.out.println("No alternative suggestions for \"" + firstWord + "\" found in the dictionary.");
+				    			}
+				    		}
+			    		} else {
+			    			System.out.println("Cannot find the word: \"" + firstWord + "\" in the dictionary");
+			    			notFound1 = oneLtrMissing(firstWord, hashTable);
+			    			notFound2 = oneLetterAdded(firstWord, hashTable);
+			    			notFound3 = twoLettersReversed(firstWord, hashTable);
+			    			if (notFound1 == "notFound" && notFound2 == "notFound" && notFound3 == "notFound") {
+			    				System.out.println("No alternative suggestions for  \"" + firstWord + "\"  found in the dictionary.");
+			    			}
+			    		}
+		    		}
+	    		} else {
+	    			System.out.println("Blank line in text file.");
+	    		}
+	        }
+	    } catch (FileNotFoundException e) {
+	 		e.printStackTrace();
+	 	}
+	}
+	
+	//Checks if 1 letter is missing from a common word in the dictionary
+	public String oneLtrMissing(String string1, Hash hashTable1) {
+		char[] alphaChar = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
+		String str2 = null;
+		int posToFind = 0;
+		String foundWord = "notFound";
+		
+		for (int i = 0; i < string1.length() + 1; i++) {
+			for(int j = 0; j < alphaChar.length; j++) {
+				str2 = addChar(string1, alphaChar[j], i);
+				posToFind = hashTable1.hash(str2);
+				Hash.Word resultWord = hashTable1.searchHash(posToFind, str2);
+				
+				if(resultWord != null) {
+					if (str2.equals(resultWord.word)) {
+						System.out.println("Alternative suggestion: " + resultWord.word);						
+						foundWord = "found";
+					}
+				}
+			}
+		}
+		return foundWord;
+	}
+	
+	//Helper function to add an extra char to the front of a string
+	public String addChar(String str, char ch, int position) {
+	    int len = str.length();
+	    char[] updatedArr = new char[len + 1];
+	    str.getChars(0, position, updatedArr, 0);
+	    updatedArr[position] = ch;
+	    str.getChars(position, len, updatedArr, position + 1);
+	    return new String(updatedArr);
+	}
+
+	//Checks if 1 letter has been added to a common word in the dictionary
+	public String oneLetterAdded(String string2, Hash hashTable2) {
+		String removed = null;
+		int posToFind = 0;
+		String foundWord = "notFound";
+		String doubleCheck = "";
+		
+		for (int i = 0; i < string2.length(); i++) {
+				removed = string2.substring(0, i) + string2.substring(i + 1);
+				posToFind = hashTable2.hash(removed);
+				Hash.Word resultWord = hashTable2.searchHash(posToFind, removed);
+
+			if (!doubleCheck.equals(removed)) {
+				if(resultWord != null) {			
+					if (removed.equals(resultWord.word)) {
+						System.out.println("Alternative suggestion: " + resultWord.word);
+						doubleCheck = removed;
+						foundWord = "found";
+					}
+				}
+			}
+		}
+		return foundWord;
+	}
+	
+	//Checks if 2 letters have been reversed in a word from the text file
+	public String twoLettersReversed(String string3, Hash hashTable3) {
+		int j = 1;
+		String swappedString = null;
+		int posToFind = 0;
+		String foundWord = "notFound";
+		
+		for (int i = 0; i < string3.length() - 1; i++) {
+			char[] characters = string3.toCharArray();
+			swap(characters, i, j);
+			j++;
+			swappedString = new String(characters);
+			posToFind = hashTable3.hash(swappedString);
+			Hash.Word resultWord = hashTable3.searchHash(posToFind, swappedString);
+			
+			if(resultWord != null) {			
+				if (swappedString.equals(resultWord.word)) {
+					System.out.println("Alternative suggestion: " + resultWord.word);
+					foundWord = "found";
+				}
+			}
+		}
+		return foundWord;
+	}
+
+	//Swap helper function
+	public void swap(char[] str, int i, int j) { 
+		char temp = str[i]; 
+		str[i] = str[j]; 
+		str[j] = temp; 
+	}
+	
+	//Helper function to check for upper case letters
+	public boolean containsUpperCaseLetter(String s){
+		for(int i=0;i<s.length();i++){
+	    	if(Character.isUpperCase(s.charAt(i))){
+	        	return true;
+	        }
+	    }
+		return false;
+	}
+}
+
+
+
+package com.Project4;
+
+
+public class Hash {
+	
+	//Word class with constructor / variables
+	class Word {
+		String word;
+		Word next;
+		
+		public Word(String string, Word n) {
+			word = string;
+			next = n;
+		}
+	}
+	
+	//Variables for hash table and table size
+	final int TABLE_SIZE = 61357;
+	Word[] table = new Word[TABLE_SIZE];
+
+	//Method to insert into hash table
+	public void insert(String word, int pos) {
+		Word tmp = new Word(word, table[pos]);
+		table[pos] = tmp;
+	}
+
+	//Method to search through the hash table / dictionary
+	public Word searchHash(int position, String string1) {
+		if (table[position] != null) {
+			while (!(table[position].word).equals(string1) && 
+					table[position].next != null) {
+				table[position] = table[position].next;
+			}
+			return table[position];
+		} else {
+			return null;
+		}
+	}
+	
+	//Method for calculating hash
+	public int hash(String string) {
+	    int length;
+	    int total = 0;	
+	    length = string.length();
+	    for(int i = 0; i < length; i++) {
+	    	total = (total << 5) - total + string.charAt(i);
+	    }
+	    if(total < 0) {
+	    	total = -1 * total;  
+	    }
+	    return total % TABLE_SIZE;
+	}
+}
+
+
+
+
+package com.Project4;
+
+import java.io.*;
+import java.util.*;
+
+//Class to create hash table and insert dictionary text file
+public class CreateHashDict {
+
+	//Reads text file and inserts into hash table
+	public void formatInsert(String fileName, Hash hashTable) {
+		try (Scanner s = new Scanner(new File(fileName))){
+	    	while (s.hasNextLine()) {
+	    		String string1 = new String(s.nextLine());
+	    		int hashPos = hashTable.hash(string1);
+	    		if(hashPos < 0) {
+	    			hashPos = hashPos * -1;
+	    			hashPos = hashPos % hashTable.TABLE_SIZE;
+	    		}
+	    		hashTable.insert(string1, hashPos);
+	        }
+	    } catch (FileNotFoundException e) {
+	 		e.printStackTrace();
+	 	}
+	}
+}
