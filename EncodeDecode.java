@@ -1,5 +1,4 @@
 //NAME: CLAYTON BAKER
-//DUE DATE: 26NOV2021
 //CLASS: COP5416
 //TITLE: Natural Language Encoder / Decoder
 //DESCRIPTION: This program encodes / decodes a list of words with plus / minus symbols.
