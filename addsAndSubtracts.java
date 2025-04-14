@@ -1,7 +1,6 @@
 //NAME: CLAYTON BAKER
 //CLASS: COP 5416
 //PR0JECT 2: ADD / SUBTRACT LARGE INTEGERS WITH STACKS
-//DUE DATE: 12NOV2021
 //DESCRIPTION: This is a Java program that will add / subtract arbitrarily large numbers using stacks.
 //First, two (large or small) integers will be placed into two stacks.  Using pop() and push(),
 //these two numbers will be added or subtracted and placed into a third stack.  The third stack
