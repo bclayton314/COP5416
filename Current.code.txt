@@ -1,5 +1,4 @@
 //NAME: CLAYTON BAKER
-//DUE DATE: 10DEC2021
 //CLASS: COP5416
 //TITLE: Spell Check Using a Hash Table
 //DESCRIPTION: This program takes a large list of words and uses a hash function to 
